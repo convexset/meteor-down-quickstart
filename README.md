@@ -17,7 +17,7 @@ Then run the todos app, and head to the `meteor-down-example` folder and run
 
 Have a look at `load-test.js` to get a sense of how to do clean load testing by example.
 
-### "Clean Load" Testing
+### "Clean Load Testing"
 
 [meteor-down](https://github.com/meteorhacks/meteor-down) does not provide a lot of tooling for load testing. In fact, one can really only use a version of `Meteor.call` and `Meteor.subscribe` (... also `EJSON`). This is really not enough.
 
