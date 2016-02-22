@@ -27,12 +27,13 @@ Even for the simple [todos](https://www.meteor.com/todos) example, a good load t
    * another subscriptions for private lists
  - for each list so obtained, subscribe to the list items
 
-This means a level of asyncrony that vanilla `Meteor.subscribe` with call backs cannot provide for. The same applies for methods. What we need are simple `Promises`.
+This means a level of asyncrony that vanilla `Meteor.subscribe` with callbacks cannot provide for. The same applies for methods. What we need are simple `Promises`.
 
 So this is the additional stuff that is available here in this little quick start:
- - `Meteor.apply` without the `options` argument
- - `Meteor.call_PromiseEdition`: returns a `Promise` (don't pass in a call back)
- - `Meteor.apply_PromiseEdition`: returns a `Promise` (don't pass in a call back)
+ - `Meteor.apply('name'[, args, callback])` without the `options` argument
+ - `Meteor.call_GetPromise('name'[, args*])`: returns a `Promise` (don't pass a callback)
+ - `Meteor.apply_GetPromise('name'[, args])`: returns a `Promise` (don't pass a callback)
+ - `Meteor.subscribe_GetPromise('name'[, args*])`: returns a `Promise` (don't pass a callback)
 
 This distribution also provides useful tooling:
  - [underscore](https://www.npmjs.com/package/underscore) in `Tools.underscore`

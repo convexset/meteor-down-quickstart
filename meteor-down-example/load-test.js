@@ -31,19 +31,22 @@ LoadTester.addTask('generate-random-numbers', function(Meteor, complete) {
 				}, resolve, reject)
 			);
 		}),
-		Meteor.call_PromiseEdition('generate-random-numbers', Math.floor(1000 * Math.random()), 10000)
+		Meteor.call_GetPromise('generate-random-numbers', Math.floor(1000 * Math.random()), 10000)
 			.then(function(result) {
-				console.log('[Meteor.call_PromiseEdition] ' + result.length + ' random samples have arrived (Mean: ' + (result.reduce((x, y) => x + y, 0) / result.length) + '). Waiting a bit...');
+				console.log('[Meteor.call_GetPromise] ' + result.length + ' random samples have arrived (Mean: ' + (result.reduce((x, y) => x + y, 0) / result.length) + '). Waiting a bit...');
 			})
 			.then(() => LoadTester.Promise.delay(2000))
 			.then(function(result) {
-				console.log('[Meteor.call_PromiseEdition] ' + 'Done waiting.');
+				console.log('[Meteor.call_GetPromise] ' + 'Done waiting.');
 			}),
-		Meteor.apply_PromiseEdition('generate-random-numbers', [Math.floor(1000 * Math.random()), 1000])
+		Meteor.apply_GetPromise('generate-random-numbers', [Math.floor(1000 * Math.random()), 1000])
 			.then(function(result) {
-				console.log('[Meteor.apply_PromiseEdition] ' + result.length + ' random samples have arrived (Mean: ' + (result.reduce((x, y) => x + y, 0) / result.length) + ').');
+				console.log('[Meteor.apply_GetPromise] ' + result.length + ' random samples have arrived (Mean: ' + (result.reduce((x, y) => x + y, 0) / result.length) + ').');
 			}),
-	]).then(complete);
+	]).then(complete)
+		.catch(function(err) {
+			console.error(err);
+		});
 
 });
 
@@ -57,11 +60,7 @@ LoadTester.addTask('get-all-data', function(Meteor, complete) {
 						resolve();
 					});
 				}),
-				new Promise(function(resolve, reject) {
-					Meteor.subscribe('privateLists', function() {
-						resolve();
-					});
-				})
+				Meteor.subscribe_GetPromise('privateLists')
 			]);
 		})
 		.then(function() {
@@ -84,7 +83,7 @@ LoadTester.addTask('get-all-data', function(Meteor, complete) {
 
 meteorDown.init(LoadTester.runTasks);
 meteorDown.run({
-	concurrency: 10,
+	concurrency: 1,
 	url: "http://localhost:3000",
 	key: "METEOR_DOWN_KEY",
 	auth: {
