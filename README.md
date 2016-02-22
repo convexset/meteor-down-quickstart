@@ -27,7 +27,7 @@ Even for the simple [todos](https://www.meteor.com/todos) example, a good load t
    * another subscriptions for private lists
  - for each list so obtained, subscribe to the list items
 
-This implies a level of asyncrony that vanilla `Meteor.subscribe` with callbacks cannot provide for. The same applies for methods. What we need are simple `Promises`.
+This implies a level of asyncrony that vanilla `Meteor.subscribe` with callbacks cannot provide for. The same applies for methods. What we need are simple promises.
 
 So this is the additional stuff that is available here in this little quick start:
  - `Meteor.apply('name'[, args, callback])` without the `options` argument
