@@ -29,7 +29,7 @@ Even for the simple [todos](https://www.meteor.com/todos) example, a good load t
 
 This means a level of asyncrony that vanilla `Meteor.subscribe` with call backs cannot provide for. The same applies for methods. What we need are simple `Promises`.
 
-So this is what is available here in this little quick start:
+So this is the additional stuff that is available here in this little quick start:
  - `Meteor.apply` without the `options` argument
  - `Meteor.call_PromiseEdition`: returns a `Promise` (don't pass in a call back)
  - `Meteor.apply_PromiseEdition`: returns a `Promise` (don't pass in a call back)
