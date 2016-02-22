@@ -65,14 +65,11 @@ LoadTester.addTask('get-all-data', function(Meteor, complete) {
 		})
 		.then(function() {
 			// For each available list, subscribe to the contents of each list
-			var keysToDownload = Object.keys(Meteor.collections.lists);
-			return Promise.all(keysToDownload.map(function(id) {
-				return new Promise(function(resolve, reject) {
-					Meteor.subscribe('todos', id, function() {
-						resolve();
-					});
-				});
-			}));
+			return Promise.all(
+				Object.keys(Meteor.collections.lists).map(
+					id => Meteor.subscribe_GetPromise('todos', id)
+				)
+			);
 		})
 		.then(function() {
 			// Report what was done and complete task
