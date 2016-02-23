@@ -46,3 +46,34 @@ This distribution also provides useful tooling:
 In addition, for kicks:
  - `LoadTester.Promise.delay(t)`: returns a promise that resolves (to `t`) after `t` milliseconds
  - `LoadTester.Decorators.resolveRejectify(cbFunc, resolve, reject)`: returns a function that calls `resolve` on the result of calling `cbFunc` (with the appropriate calling context and arguments) and `reject` on the error thrown if there is an exception
+
+Here is an example of how a test might be written:
+```javascript
+LoadTester.addTask('get-all-data', function(Meteor, complete) {
+    Promise.resolve()
+        .then(function() {
+            // Subscribe to both public lists and private lists
+            return Promise.all([
+                new Promise(function(resolve, reject) {
+                    Meteor.subscribe('publicLists', function() {
+                        resolve();
+                    });
+                }),
+                Meteor.subscribe_GetPromise('privateLists')
+            ]);
+        })
+        .then(function() {
+            // For each available list, subscribe to the contents of each list
+            return Promise.all(
+                Object.keys(Meteor.collections.lists).map(
+                    id => Meteor.subscribe_GetPromise('todos', id)
+                )
+            );
+        })
+        .then(function() {
+            // Report what was done and complete task
+            console.log(Object.keys(Meteor.collections.todos).length + ' todos from ' + Object.keys(Meteor.collections.lists).length + ' lists downloaded.');
+            complete();
+        });
+});
+```
