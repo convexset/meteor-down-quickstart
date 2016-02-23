@@ -36,12 +36,12 @@ So this is the additional stuff that is available here in this little quick star
  - `Meteor.subscribe_GetPromise('name'[, args*])`: returns a `Promise` (don't pass a callback)
 
 This distribution also provides useful tooling:
- - [underscore](https://www.npmjs.com/package/underscore) in `Tools.underscore`
+ - [underscore](https://www.npmjs.com/package/underscore) in `LoadTester.ExternalTools.underscore`
  - [lodash](https://www.npmjs.com/package/lodash)
-   * "Full Build" in `Tools.lodash.fullBuild`
-   * "Core Build" in `Tools.lodash.coreBuild`
-   * "Functional Programming Build" in `Tools.lodash.fpBuild`
- - [OperationsQueue](https://atmospherejs.com/convexset/operations-queue) in `Tools.OperationsQueue`
+   * "Full Build" in `LoadTester.ExternalTools.lodash.fullBuild`
+   * "Core Build" in `LoadTester.ExternalTools.lodash.coreBuild`
+   * "Functional Programming Build" in `LoadTester.ExternalTools.lodash.fpBuild`
+ - [OperationsQueue](https://atmospherejs.com/convexset/operations-queue) in `LoadTester.ExternalTools.OperationsQueue`
 
 In addition, for kicks:
  - `LoadTester.Promise.delay(t)`: returns a promise that resolves (to `t`) after `t` milliseconds
@@ -77,3 +77,11 @@ LoadTester.addTask('get-all-data', function(Meteor, complete) {
         });
 });
 ```
+
+### This "Framework"
+
+This is how things are organized:
+ - The `load-test.js` file is something of an index for batteries of tests it is also where various `meteor-down` settings are defined (see [this](https://github.com/meteorhacks/meteor-down) for details).
+ - In `load-test.js`, we "require" the `LoadTester` object, and pass it into the exports of each battery of tests, which are supposed to define each test and include it in the larger test battery. A prefix is included to "try to reduce" namespace collisions
+
+And that's it!

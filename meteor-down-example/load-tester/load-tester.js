@@ -120,11 +120,11 @@ module.exports = (function() {
 		function completeTask(taskName) {
 			return function completeThisTask() {
 				record[taskName] = true;
-				console.log("~~~ [" + Meteor.session + "] Completed: " + taskName + " ~~~");
+				console.log("~~~ [Session: " + Meteor.session + "] Completed: " + taskName + " ~~~");
 
 				var allDone = tasks.map(task => record[task.name]).reduce((x, y) => x && y, true);
 				if (allDone) {
-					console.log("********** [" + Meteor.session + "] " + tasks.length + " tasks done. **********");
+					console.log("********** [Session: " + Meteor.session + "] " + tasks.length + " tasks done. **********");
 					Meteor.kill();
 				}
 			};
@@ -166,6 +166,16 @@ module.exports = (function() {
 				return result;
 			}
 		}
+	};
+
+	LoadTester.ExternalTools = {
+		underscore: require("underscore"),
+		lodash: {
+			fullBuild: require('lodash'),
+			coreBuild: require('lodash/core'),
+			fpBuild: require('lodash/fp'),
+		},
+		OperationsQueue: require('operations-queue')
 	};
 
 	return LoadTester;

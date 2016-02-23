@@ -1,12 +1,10 @@
 {
-  "name": "load-tester",
+  "name": "some-package-of-load-tests",
   "version": "0.1.0",
   "description": "",
-  "main": "load-tester.js",
+  "main": "index.js",
   "dependencies": {
-    "underscore": "^1.8.3",
-    "lodash": "^4.5.1",
-    "operations-queue": "^0.1.1"
+    "load-tester": "^0.1.0"
   },
   "devDependencies": {},
   "scripts": {
