@@ -1,8 +1,22 @@
 {
   "name": "operations-queue",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "",
   "main": "operations-queue.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/convexset/meteor-operations-queue.git"
+  },
+  "bugs": {
+    "url": "https://github.com/convexset/meteor-operations-queue/issues"
+  },
+  "homepage": "https://github.com/convexset/meteor-operations-queue#readme",
+  "keywords": [
+    "task",
+    "asynchronous",
+    "queue",
+    "resource bound"
+  ],
   "dependencies": {
     "underscore": "^1.8.3"
   },
@@ -11,5 +25,5 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Jeremy Chen <convexset@gmail.com> (https://github.com/convexset/)",
-  "license": "ISC"
+  "license": "MIT"
 }

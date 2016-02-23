@@ -1,6 +1,35 @@
-var _ = require("underscore");
+/* global OperationsQueue: true */
 
-module.exports = (function(undefined) {
+(function(root, name, factory) {
+	if (typeof module === "object" && module.exports) {
+		// Node or CommonJS
+		module.exports = factory(require("underscore"));
+	} else {
+		// The Else Condition
+
+		if (typeof define === "function" && define.amd) {
+			// AMD... but why?
+			define(["underscore"], function(_) {
+				return factory(_);
+			});
+		}
+		
+		// Find the global object for export to both the browser and web workers.
+		var globalObject = (typeof window === 'object') && window ||
+			(typeof self === 'object') && self;
+
+		var thingie = factory(_);
+		root[name] = thingie;
+		if (!!globalObject) {
+			globalObject[name] = thingie;
+		}
+
+		// Poor Meteor
+		OperationsQueue = thingie;
+	}
+}(this, 'OperationsQueue', factoryOperationsQueue));
+
+function factoryOperationsQueue(_) {
 	'use strict';
 
 	var DEBUG_MODE = false;
@@ -33,7 +62,7 @@ module.exports = (function(undefined) {
 			attempt_counts_left -= 1;
 		}
 		if (attempt_counts_left === 0) {
-			throw new Error("failed-to-generate-fake-id");
+			throw "failed-to-generate-fake-id";
 		}
 		pastIds[this_attempt] = 1;
 		return this_attempt;
@@ -118,7 +147,6 @@ module.exports = (function(undefined) {
 		});
 
 
-
 		// Get dictionary of available resources
 		function getAvailableResources() {
 			return _.extend({}, availableResources);
@@ -146,7 +174,7 @@ module.exports = (function(undefined) {
 		// but no when the OperationsQueue has been ABORTED
 		this.createTask = function(taskOptions) {
 			if (status === STATUS_ABORTED) {
-				throw new Error("operations-aborted");
+				throw "operations-aborted";
 			}
 
 			// Default options
@@ -203,18 +231,18 @@ module.exports = (function(undefined) {
 
 			var taskId = taskOptions.name + " [" + fakeId() + "]";
 			taskOptions.id = taskId;
-			taskOptions.output = undefined;
+			delete taskOptions.output;
 
 			// Check taskOptions.taskDependencies
 			//  - type
 			//  - existence of task IDs
 			if (!_.isArray(taskOptions.taskDependencies)) {
-				throw new Error("invalid-task-dependencies");
+				throw "invalid-task-dependencies";
 			}
 			for (var i = 0; i < taskOptions.taskDependencies.length; i++) {
 				var requiredTaskId = taskOptions.taskDependencies[i];
 				if (!(requiredTaskId in taskSequences)) {
-					throw new Error("required-task-id-not-found: " + requiredTaskId);
+					throw "required-task-id-not-found: " + requiredTaskId;
 				}
 			}
 
@@ -223,7 +251,7 @@ module.exports = (function(undefined) {
 			for (var res in taskOptions.resourceUse) {
 				if (taskOptions.resourceUse.hasOwnProperty(res)) {
 					if (!(res in availableResources) || availableResources[res] < taskOptions.resourceUse[res]) {
-						throw new Error("not-resource-feasible");
+						throw "not-resource-feasible";
 					}
 				}
 			}
@@ -238,7 +266,7 @@ module.exports = (function(undefined) {
 		//  - checks if the required resources are presently available
 		function canTaskRun(taskId) {
 			if (!(taskId in taskSequences)) {
-				throw new Error("taskId not found");
+				throw "taskId not found";
 			}
 			for (var i = 0; i < taskSequences[taskId].taskDependencies.length; i++) {
 				var requiredTaskId = taskSequences[taskId].taskDependencies[i];
@@ -316,7 +344,7 @@ module.exports = (function(undefined) {
 		// Starts the OperationsQueue working
 		this.start = function() {
 			if (status === STATUS_ABORTED) {
-				throw new Error("start-error: " + getStatus());
+				throw "start-error: " + getStatus();
 			}
 			if (status === STATUS_READY) {
 				fresh_start = true;
@@ -331,7 +359,7 @@ module.exports = (function(undefined) {
 		// created (obviously)
 		this.abort = function() {
 			if (status !== STATUS_RUNNING) {
-				throw new Error("operations-not-running");
+				throw "operations-not-running";
 			}
 			status = STATUS_ABORTED;
 		};
@@ -470,49 +498,47 @@ module.exports = (function(undefined) {
 						return taskSequences[k].output;
 					});
 
-					if (taskSequences[taskId].is_synchronous) {
-						// Synchronous Task
-						if (options.show_debug_output) {
-							console.log('Starting Synchronous Task');
-						}
-						// ... do it!! (Please pre-bind functions)
-						return_value = taskSequences[taskId].task.apply({}, inputArray);
+					// Synchronous Task
+					if (options.show_debug_output) {
+						console.log('Starting Task');
+					}
+					// ... do it!! (Please pre-bind functions)
+					// return_value = taskSequences[taskId].task.apply({}, inputArray);
+					var result;
+					try {
+						result = taskSequences[taskId].task.apply({}, inputArray);
+						return_value = {
+							result: result
+						};
+					} catch (e) {
+						return_value = {
+							error: e
+						};
+					}
 
-						// Check if a likely error was committed
-						if (return_value instanceof Promise) {
-							// If return_value is a Promise, instructions were
-							// not followed. Abort and throw.
-							status = STATUS_ABORTED;
-							throw new Error("synchronous-task-should-not-return-a-promise: Aborting.");
-						}
-
-						taskSequences[taskId].output = return_value;
-						cleanUp();
-					} else {
-						// If task returns a promise
-						if (options.show_debug_output) {
-							console.log('Starting Promise-y Task');
-						}
-						var thisPromise = taskSequences[taskId].task.apply({}, inputArray);
-						// ... append call back to extract return value
-						thisPromise
+					// Check if a likely error was committed
+					if (result instanceof Promise) {
+						// asynchronous task
+						return_value = null;
+						result
 							.then(function setReturnValueAndCleanUp(result) {
 								return_value = {
-									result: result,
-									error: null
+									result: result
 								};
 								taskSequences[taskId].output = return_value;
 								cleanUp();
 							})
 							.catch(function processErrorAndCleanUp(err) {
 								return_value = {
-									result: null,
 									error: err
 								};
 								taskSequences[taskId].output = return_value;
 								cleanUp();
 							});
-
+					} else {
+						// synchronous task
+						taskSequences[taskId].output = return_value;
+						cleanUp();
 					}
 
 				};
@@ -541,4 +567,4 @@ module.exports = (function(undefined) {
 	};
 
 	return OperationsQueue;
-})();
+};
