@@ -13,7 +13,7 @@
 				return factory(_);
 			});
 		}
-		
+
 		// Find the global object for export to both the browser and web workers.
 		var globalObject = (typeof window === 'object') && window ||
 			(typeof self === 'object') && self;
@@ -448,7 +448,7 @@ function factoryOperationsQueue(_) {
 				}
 
 				// Create task wrapper
-				var wrapper = function() {
+				var taskWrapper = function() {
 					if (options.show_debug_output) {
 						console.log("Running: " + taskId);
 					}
@@ -502,49 +502,32 @@ function factoryOperationsQueue(_) {
 					if (options.show_debug_output) {
 						console.log('Starting Task');
 					}
-					// ... do it!! (Please pre-bind functions)
-					// return_value = taskSequences[taskId].task.apply({}, inputArray);
-					var result;
-					try {
-						result = taskSequences[taskId].task.apply({}, inputArray);
-						return_value = {
-							result: result
-						};
-					} catch (e) {
-						return_value = {
-							error: e
-						};
-					}
 
-					// Check if a likely error was committed
-					if (result instanceof Promise) {
-						// asynchronous task
-						return_value = null;
-						result
-							.then(function setReturnValueAndCleanUp(result) {
-								return_value = {
-									result: result
-								};
-								taskSequences[taskId].output = return_value;
-								cleanUp();
-							})
-							.catch(function processErrorAndCleanUp(err) {
-								return_value = {
-									error: err
-								};
-								taskSequences[taskId].output = return_value;
-								cleanUp();
-							});
-					} else {
-						// synchronous task
-						taskSequences[taskId].output = return_value;
-						cleanUp();
-					}
+					// Promisify and handle everything accordingly
+					return_value = null;
+					new Promise(function(resolve, reject) {
+						// do this instead of Promise.resolve so exceptions are caught inside
+						resolve(taskSequences[taskId].task.apply({}, inputArray));
+					})
+						.then(function setReturnValueAndCleanUp(result) {
+							return_value = {
+								result: result
+							};
+							taskSequences[taskId].output = return_value;
+							cleanUp();
+						})
+						.catch(function processErrorAndCleanUp(err) {
+							return_value = {
+								error: err
+							};
+							taskSequences[taskId].output = return_value;
+							cleanUp();
+						});
 
 				};
 
 				// Queue task up
-				setTimeout(wrapper, fresh_start ? 0 : options.sleep_period_between_processing);
+				setTimeout(taskWrapper, fresh_start ? 0 : options.sleep_period_between_processing);
 
 				// Not a fresh start any more
 				fresh_start = false;
