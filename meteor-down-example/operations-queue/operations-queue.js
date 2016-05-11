@@ -4,6 +4,7 @@
 	if (typeof module === "object" && module.exports) {
 		// Node or CommonJS
 		module.exports = factory(require("underscore"));
+		OperationsQueue = module.exports;
 	} else {
 		// The Else Condition
 
